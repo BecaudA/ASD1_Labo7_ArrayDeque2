@@ -68,6 +68,16 @@ public:
 			return iP + capacity();
 		}
 	}
+	
+	size_type i_physique(size_type i_logique, size_type otherCapacity) const {
+		size_type iP = (debut + i_logique) % otherCapacity;
+		if (iP >= 0) {
+			return iP;
+		}
+		else {
+			return iP + otherCapacity;
+		}
+	}
 
 	/**
 	 * @brief Augmente la capacité du vecteur s'il le faut
@@ -75,21 +85,14 @@ public:
 	void nouvelleCapacite() {
 		//Si le buffer à un capacité de 0, elle sera passée à 1
 		//sinon au double de la capacité actuelle
-		size_type nouvelleTaille;
-		if (!taille) {
-			nouvelleTaille = 1;
+		 size_type oldCapacity = capacite;
+       capacite = !capacite ? 1 : capacite * 2;
+       pointer temp = buffer;
+       buffer = new value_type[capacite];
+       for (size_type i = 0; i < oldCapacity; ++i) {
+			*(buffer + i) = *std::move((temp + i_physique(i, oldCapacity)));
 		}
-		else {
-			nouvelleTaille = capacity() * 2;
-		}
-
-		pointer temp = (pointer) ::operator new(nouvelleTaille * sizeof(value_type));
-		for (size_type i = 0; i < capacity(); ++i) {
-			*(temp + i) = *std::move((buffer + i_physique(i)));
-		}
-
-		std::iter_swap(temp, buffer);
-
+       
 		// Détruit temp
 		// Parcours la Pile, détruit chaque objets
 		for (size_t i = 0; i < taille; ++i) {
@@ -98,6 +101,7 @@ public:
 		::operator delete(temp);
 
 		debut = 0;
+		
 	}
 
 	/**
