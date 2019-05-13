@@ -29,6 +29,10 @@ public:
 			: nullptr;
 	}
    
+   /**
+    * @brief Constructeur par copie
+    * param deque 
+    */
    ArrayDeque(const ArrayDeque& deque) : ArrayDeque(deque.capacite)
    {
       debut = deque.debut;
@@ -39,15 +43,20 @@ public:
       }
    }
    
+   /**
+    * @brief Destructeur
+    */
    ~ArrayDeque() {
       for (size_type i = 0; i < taille; ++i) 
       {
          buffer[i_physique(i)].~value_type();
       }
-
       ::operator delete(buffer);
    }
    
+   /**
+    * @brief Opérateur d'affection par copie
+    */
    ArrayDeque& operator=(const ArrayDeque& deque)
    {
       ArrayDeque temp = deque;
@@ -55,28 +64,36 @@ public:
       return *this;
    }
    
+   /**
+    * @brief Getter d'un élément en position n logique
+    * @param n Position logique de l'élément 
+    */
 	reference at(size_type n) {
 		return *(buffer + i_physique(n));
 	}
 
+   /**
+    * @brief Setter d'un élément en position n logique
+    * @param n Position logique de l'élément 
+    */
 	const_reference at(size_type n) const {
 		return *(buffer + i_physique(n));
 	}
 
 	/**
-	  * @brief Getter de la taille du vecteur
+	  * @brief Getter de la taille du tableau
 	  * @return Taille du vecteur
 	  */
 	size_type size() const { return this->taille; }
 
 	/**
-	 * @brief Getter de la capacité du vecteur
+	 * @brief Getter de la capacité du buffer
 	 */
 	size_type capacity() const { return this->capacite; }
 
 	/**
-	 * @brief Vérifie si le vecteur est vide
-	 * @return Vrai si le vecteur est vide
+	 * @brief Vérifie si le tableau est vide
+	 * @return Vrai si le tableau est vide
 	 */
 	bool empty() const { return (this->size() == 0); }
 
@@ -95,6 +112,12 @@ public:
 		}
 	}
 	
+	/**
+	 * @brief Convertisseur d'indice logique à physique (pour un autre buffer)
+	 * @param i_logique
+	 * @param otherCapacity
+	 * @return Indice physique
+	 */
 	size_type i_physique(size_type i_logique, size_type otherCapacity) const {
 		size_type iP = (debut + i_logique) % otherCapacity;
 		if (iP >= 0) {
@@ -124,36 +147,40 @@ public:
 	}
 
 	/**
-	 * @brief Getter du dernier élément du vecteur
-	 * @return Dernier élément du vecteur
+	 * @brief Setter du dernier élément du tableau
+	 * @return Dernier élément du tableau
 	 */
 	reference back() {
 		return buffer[i_physique(taille - 1)];
 	}
 	
+	/**
+	 * @brief Getter du dernier élément du tableau
+	 * @return Dernier élément du tableau
+	 */
 	const_reference back() const
 	{
 	   return buffer[i_physique(taille - 1)];
 	}
 
 	/**
-	 * Getter du premier élément du vecteur
-	 * @return Premier élément du vecteur
+	 * Setter du premier élément du tableau
+	 * @return Premier élément du tableau
 	 */
 	reference front() {
 		return buffer[debut];
 	}
 
 	/**
-	 * Setter du premier élément du vecteur
-	 * @return Premier élément du vecteur
+	 * Getter du premier élément du tableau
+	 * @return Premier élément du tableau
 	 */
 	const_reference front() const {
 		return buffer[debut];
 	}
 
 	/**
-	 * @brief Ajoute un élément à la fin du vecteur
+	 * @brief Ajoute un élément à la fin du tableau
 	 * @param valeur
 	 */
 	void push_back(const_reference valeur) {
@@ -167,6 +194,10 @@ public:
 		}
 	}
 	
+	/**
+	 * @brief Ajoute un élément (rvalue) à la fin du tableau
+	 * @param valeur
+	 */
 	void push_back(rvalue_reference valeur) {
 		if (taille >= capacity()) {
 			nouvelleCapacite();
@@ -179,7 +210,7 @@ public:
 	}
 
 	/**
-	 * @brief Ajoute un élément au début du vecteur
+	 * @brief Ajoute un élément au début du tableau
 	 * @param valeur
 	 */
 	void push_front(const_reference valeur) {
@@ -196,6 +227,10 @@ public:
 		}
 	}
 	
+	/**
+	 * @brief Ajoute un élément (rvalue) au début du tableau
+	 * @param valeur
+	 */
 	void push_front(rvalue_reference valeur) {
 		//Si la taille == la capacité du buffer (buffer.size())
 		//alors il faut augmenter la capacité
