@@ -85,23 +85,23 @@ public:
 	void nouvelleCapacite() {
 		//Si le buffer à un capacité de 0, elle sera passée à 1
 		//sinon au double de la capacité actuelle
-		 size_type oldCapacity = capacite;
-       capacite = !capacite ? 1 : capacite * 2;
-       pointer temp = buffer;
-       buffer = new value_type[capacite];
-       for (size_type i = 0; i < oldCapacity; ++i) {
-			*(buffer + i) = *std::move((temp + i_physique(i, oldCapacity)));
+		 size_type nouvelleCapacite = capacite == 0 ? 1 : capacite * 2;
+       ArrayDeque temp(nouvelleCapacite);
+       for (size_type i = 0; i < taille; ++i) {
+			new(temp.buffer + i) value_type(std::move(buffer[i_physique(i)]));
+			++temp.taille;
 		}
        
+		std::swap(buffer, temp.buffer);
+		std::swap(capacite, temp.capacite);
+		std::swap(debut, temp.debut);
+		
 		// Détruit temp
 		// Parcours la Pile, détruit chaque objets
-		for (size_t i = 0; i < taille; ++i) {
-			(*(temp + (i_physique(i)))).~value_type();
-		}
-		::operator delete(temp);
-
-		debut = 0;
-		
+		//for (size_t i = 0; i < temp.taille; ++i) {
+		//	(*(temp + (i_physique(i)))).~value_type();
+		//}
+		//::operator delete(temp);
 	}
 
 	/**
