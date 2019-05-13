@@ -28,7 +28,33 @@ public:
 			(pointer) ::operator new(capacite * sizeof(value_type))
 			: nullptr;
 	}
+   
+   ArrayDeque(const ArrayDeque& deque) : ArrayDeque(deque.capacite)
+   {
+      debut = deque.debut;
+      for (size_type i = 0; i < deque.taille; ++i) 
+      {
+         new(buffer + i_physique(i)) value_type(deque.at(i));
+         ++taille;
+      }
+   }
+   
+   ~ArrayDeque() {
+      for (size_type i = 0; i < taille; ++i) 
+      {
+         buffer[i_physique(i)].~value_type();
+      }
 
+      ::operator delete(buffer);
+   }
+   
+   ArrayDeque& operator=(const ArrayDeque& deque)
+   {
+      ArrayDeque temp = deque;
+      std::swap(buffer, temp.buffer);
+      return *this;
+   }
+   
 	reference at(size_type n) {
 		return *(buffer + i_physique(n));
 	}
@@ -95,13 +121,6 @@ public:
 		std::swap(buffer, temp.buffer);
 		std::swap(capacite, temp.capacite);
 		std::swap(debut, temp.debut);
-		
-		// Détruit temp
-		// Parcours la Pile, détruit chaque objets
-		//for (size_t i = 0; i < temp.taille; ++i) {
-		//	(*(temp + (i_physique(i)))).~value_type();
-		//}
-		//::operator delete(temp);
 	}
 
 	/**
@@ -111,13 +130,10 @@ public:
 	reference back() {
 		return buffer[i_physique(taille - 1)];
 	}
-
-	/**
-	 * @brief Setter du dernier élément du vecteur
-	 * @return Dernier élément du vecteur
-	 */
-	T back() const {
-		return buffer[i_physique(taille - 1)];
+	
+	const_reference back() const
+	{
+	   return buffer[i_physique(taille - 1)];
 	}
 
 	/**
@@ -132,7 +148,7 @@ public:
 	 * Setter du premier élément du vecteur
 	 * @return Premier élément du vecteur
 	 */
-	T front() const {
+	const_reference front() const {
 		return buffer[debut];
 	}
 
@@ -140,13 +156,24 @@ public:
 	 * @brief Ajoute un élément à la fin du vecteur
 	 * @param valeur
 	 */
-	void push_back(value_type valeur) {
+	void push_back(const_reference valeur) {
 		if (taille >= capacity()) {
 			nouvelleCapacite();
 		}
 
 		if (taille < capacity()) {
-			*(buffer + i_physique(taille)) = valeur;
+			new(buffer + i_physique(taille)) value_type(valeur);
+			++taille;
+		}
+	}
+	
+	void push_back(rvalue_reference valeur) {
+		if (taille >= capacity()) {
+			nouvelleCapacite();
+		}
+
+		if (taille < capacity()) {
+			new(buffer + i_physique(taille)) value_type(std::move(valeur));
 			++taille;
 		}
 	}
@@ -155,7 +182,7 @@ public:
 	 * @brief Ajoute un élément au début du vecteur
 	 * @param valeur
 	 */
-	void push_front(value_type valeur) {
+	void push_front(const_reference valeur) {
 		//Si la taille == la capacité du buffer (buffer.size())
 		//alors il faut augmenter la capacité
 		if (taille >= capacity()) {
@@ -163,8 +190,22 @@ public:
 		}
 
 		if (taille < capacity()) {
-			debut = i_physique(capacity() - 1);
-			front() = valeur;
+		   new(buffer + i_physique(capacite - 1)) value_type(valeur);
+		   debut = i_physique(capacite - 1);
+			++taille;
+		}
+	}
+	
+	void push_front(rvalue_reference valeur) {
+		//Si la taille == la capacité du buffer (buffer.size())
+		//alors il faut augmenter la capacité
+		if (taille >= capacity()) {
+			nouvelleCapacite();
+		}
+
+		if (taille < capacity()) {
+		   new(buffer + i_physique(capacite - 1)) value_type(std::move(valeur));
+		   debut = i_physique(capacite - 1);
 			++taille;
 		}
 	}
@@ -174,6 +215,7 @@ public:
 	 */
 	void pop_back() {
 		if (taille) {
+		   buffer[i_physique(taille - 1)].~value_type();
 			--taille;
 		}
 	}
@@ -183,6 +225,7 @@ public:
 	 */
 	void pop_front() {
 		if (taille) {
+		   buffer[debut].~value_type();
 			debut = i_physique(1);
 			--taille;
 		}
